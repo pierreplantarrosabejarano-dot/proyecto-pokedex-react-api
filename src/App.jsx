@@ -5,6 +5,27 @@ import { useFavoritos } from './context/FavoritosContext';
 
 const API_URL = 'https://pokeapi.co/api/v2/pokemon?limit=20';
 
+async function obtenerPokemones() {
+  const respuesta = await fetch(API_URL);
+  if (!respuesta.ok) {
+    throw new Error(`Error del servidor (${respuesta.status})`);
+  }
+  const json = await respuesta.json();
+
+  return Promise.all(
+    json.results.map(async (item) => {
+      const resDetalle = await fetch(item.url);
+      const detalle = await resDetalle.json();
+      return {
+        id: detalle.id,
+        nombre: detalle.name.charAt(0).toUpperCase() + detalle.name.slice(1),
+        tipo: detalle.types.map((t) => t.type.name).join(' / '),
+        imagen: detalle.sprites.front_default,
+      };
+    }),
+  );
+}
+
 function App() {
   const [datos, setDatos] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -14,41 +35,49 @@ function App() {
   // Leemos favoritos desde el contexto global
   const { favoritos } = useFavoritos();
 
-  const cargarPokemones = async () => {
-    try {
-      setCargando(true);
-      setError(null);
+  useEffect(() => {
+    let activo = true;
 
-      const respuesta = await fetch(API_URL);
-      if (!respuesta.ok) {
-        throw new Error(`Error del servidor (${respuesta.status})`);
+    const cargarInicial = async () => {
+      try {
+        const listaDetallada = await obtenerPokemones();
+        if (activo) {
+          setDatos(listaDetallada);
+        }
+      } catch {
+        if (activo) {
+          setError(
+            '¡Ups! No pudimos conectar con la PokéAPI en este momento. Revisa tu conexión a internet e inténtalo de nuevo.',
+          );
+        }
+      } finally {
+        if (activo) {
+          setCargando(false);
+        }
       }
-      const json = await respuesta.json();
+    };
 
-      const listaDetallada = await Promise.all(
-        json.results.map(async (item) => {
-          const resDetalle = await fetch(item.url);
-          const detalle = await resDetalle.json();
-          return {
-            id: detalle.id,
-            nombre: detalle.name.charAt(0).toUpperCase() + detalle.name.slice(1),
-            tipo: detalle.types.map((t) => t.type.name).join(' / '),
-            imagen: detalle.sprites.front_default
-          };
-        })
-      );
+    void cargarInicial();
+    return () => {
+      activo = false;
+    };
+  }, []);
 
+  const cargarPokemones = async () => {
+    setCargando(true);
+    setError(null);
+
+    try {
+      const listaDetallada = await obtenerPokemones();
       setDatos(listaDetallada);
-    } catch (err) {
-      setError('¡Ups! No pudimos conectar con la PokéAPI en este momento. Revisa tu conexión a internet e inténtalo de nuevo.');
+    } catch {
+      setError(
+        '¡Ups! No pudimos conectar con la PokéAPI en este momento. Revisa tu conexión a internet e inténtalo de nuevo.',
+      );
     } finally {
       setCargando(false);
     }
   };
-
-  useEffect(() => {
-    cargarPokemones();
-  }, []);
 
   const datosFiltrados = datos.filter((pokemon) =>
     pokemon.nombre.toLowerCase().includes(busqueda.toLowerCase())
