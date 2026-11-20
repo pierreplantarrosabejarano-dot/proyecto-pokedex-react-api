@@ -1,8 +1,12 @@
+import { useFavoritos } from '../context/FavoritosContext';
+
 function Header() {
+  const { favoritos } = useFavoritos();
+
   return (
-    <header>
-      <h1>Pokedex Virtual</h1>
-      <p>Proyecto React - Programacion Web I</p>
+    <header className="header">
+      <h1>Pokédex Virtual</h1>
+      <p>Proyecto React - Programación Web I | ★ Favoritos: <strong>{favoritos.length}</strong></p>
     </header>
   );
 }

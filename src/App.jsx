@@ -1,33 +1,30 @@
 import { useState, useEffect } from 'react';
 import Header from './components/Header';
 import PokemonCard from './components/PokemonCard';
+import { useFavoritos } from './context/FavoritosContext';
 
 const API_URL = 'https://pokeapi.co/api/v2/pokemon?limit=20';
 
 function App() {
-  // 2. Los tres estados solicitados: datos, cargando y error
   const [datos, setDatos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
-
-  // Estados de interacción del usuario
   const [busqueda, setBusqueda] = useState('');
-  const [favoritos, setFavoritos] = useState([]);
 
-  // Función de carga reutilizable (para useEffect y botón de reintento)
+  // Leemos favoritos desde el contexto global
+  const { favoritos } = useFavoritos();
+
   const cargarPokemones = async () => {
     try {
       setCargando(true);
       setError(null);
 
-      // 1. Cargar los datos de la API con fetch
       const respuesta = await fetch(API_URL);
       if (!respuesta.ok) {
         throw new Error(`Error del servidor (${respuesta.status})`);
       }
       const json = await respuesta.json();
 
-      // Obtener detalles completos (id, tipos e imagen) para cada elemento
       const listaDetallada = await Promise.all(
         json.results.map(async (item) => {
           const resDetalle = await fetch(item.url);
@@ -49,18 +46,9 @@ function App() {
     }
   };
 
-  // 1. Ejecutar fetch dentro de useEffect al montar el componente
   useEffect(() => {
     cargarPokemones();
   }, []);
-
-  const toggleFavorito = (id) => {
-    if (favoritos.includes(id)) {
-      setFavoritos(favoritos.filter((favId) => favId !== id));
-    } else {
-      setFavoritos([...favoritos, id]);
-    }
-  };
 
   const datosFiltrados = datos.filter((pokemon) =>
     pokemon.nombre.toLowerCase().includes(busqueda.toLowerCase())
@@ -92,7 +80,6 @@ function App() {
           </div>
         </section>
 
-        {/* 4. Mensaje exacto de carga */}
         {cargando && (
           <div style={{ textAlign: 'center', padding: '2rem' }}>
             <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#2c3e50' }}>
@@ -101,7 +88,6 @@ function App() {
           </div>
         )}
 
-        {/* 4. Mensaje de error amigable */}
         {error && (
           <div
             style={{
@@ -133,7 +119,7 @@ function App() {
           </div>
         )}
 
-        {/* 3. Renderizar la lista con .map() y key único (el id) */}
+        {/* Renderizado limpio sin prop drilling de favoritos */}
         {!cargando && !error && (
           <section className="pokedex-grid">
             {datosFiltrados.map((pokemon) => (
@@ -143,8 +129,6 @@ function App() {
                 nombre={pokemon.nombre}
                 tipo={pokemon.tipo}
                 imagen={pokemon.imagen}
-                esFavorito={favoritos.includes(pokemon.id)}
-                onToggleFavorito={toggleFavorito}
               />
             ))}
           </section>

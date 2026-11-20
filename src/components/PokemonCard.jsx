@@ -1,13 +1,17 @@
-function PokemonCard({ id, nombre, tipo, imagen, esFavorito, onToggleFavorito }) {
+import { useFavoritos } from '../context/FavoritosContext';
+
+function PokemonCard({ id, nombre, tipo, imagen }) {
+  const { favoritos, toggleFavorito } = useFavoritos();
+  const esFavorito = favoritos.includes(id);
+
   return (
     <article className="pokemon-card">
       <img src={imagen} alt={nombre} />
       <h3>#{String(id).padStart(3, '0')} {nombre}</h3>
       <p className="type">{tipo}</p>
-      
-      {/* Botón interactivo conectado por props */}
-      <button 
-        onClick={() => onToggleFavorito(id)}
+
+      <button
+        onClick={() => toggleFavorito(id)}
         style={{
           marginTop: '10px',
           padding: '6px 12px',
