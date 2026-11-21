@@ -23,6 +23,7 @@ describe('Pruebas de integración del componente PokemonCard', () => {
     expect(screen.getByText('#001 Bulbasaur')).toBeInTheDocument();
     expect(screen.getByText('grass / poison')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Agregar a favoritos/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Ver detalle de Bulbasaur/i })).toBeInTheDocument();
   });
 
   it('cambia el estado visual del botón al hacer clic con userEvent', async () => {
