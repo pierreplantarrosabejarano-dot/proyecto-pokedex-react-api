@@ -88,10 +88,12 @@ function InicioScreen({
             </div>
 
             <article className="featured-card screen-transition">
-              <img src={destacado.imagen} alt={destacado.nombre} className="featured-card__image" loading="lazy" />
               <div className="featured-card__info">
                 <div className="featured-card__meta">
-                  <h3>{`${formatearNumeroPokemon(destacado.id)} ${destacado.nombre}`}</h3>
+                  <div className="featured-card__title">
+                    <span className="featured-card__number">{formatearNumeroPokemon(destacado.id)}</span>
+                    <h3>{destacado.nombre}</h3>
+                  </div>
                   <FavoriteButton
                     activo={esFavorito?.(destacado.id)}
                     onToggle={() => onToggleFavorito?.(destacado.id)}
@@ -100,21 +102,47 @@ function InicioScreen({
                     nombre={destacado.nombre}
                   />
                 </div>
-                <p>{destacado.tipoTexto || 'Cargando tipo...'}</p>
+
+                <div className="featured-card__types" aria-label="Tipos">
+                  {(destacado.tipos?.length ? destacado.tipos : [destacado.tipoTexto || 'Cargando tipo...']).map((tipo) => (
+                    <span key={tipo} className="featured-card__type">{tipo}</span>
+                  ))}
+                </div>
+
                 <div className="featured-card__facts" aria-label="Datos rápidos del Pokémon destacado">
                   <div className="featured-card__fact">
                     <span>Altura</span>
-                    <strong>{destacado.altura || '—'}</strong>
+                    <strong>{destacado.altura || '…'}</strong>
                   </div>
                   <div className="featured-card__fact">
                     <span>Peso</span>
-                    <strong>{destacado.peso || '—'}</strong>
+                    <strong>{destacado.peso || '…'}</strong>
                   </div>
                   <div className="featured-card__fact">
                     <span>Habilidad</span>
-                    <strong>{(destacado.habilidades || [])[0] || '—'}</strong>
+                    <strong>{(destacado.habilidades || [])[0] || '…'}</strong>
                   </div>
                 </div>
+
+                <div className="featured-card__stats" aria-label="Estadísticas destacadas">
+                  {['hp', 'attack', 'defense', 'speed'].map((clave) => {
+                    const stat = (destacado.stats || []).find((s) => s.clave === clave);
+                    const valor = stat?.valor ?? null;
+                    const ancho = valor != null ? Math.min(100, Math.round((valor / 255) * 100)) : 0;
+                    return (
+                      <div key={clave} className="featured-card__stat">
+                        <div className="featured-card__stat-meta">
+                          <span>{stat?.nombre || ({ hp: 'PS', attack: 'Ataque', defense: 'Defensa', speed: 'Velocidad' }[clave])}</span>
+                          <strong>{valor ?? '…'}</strong>
+                        </div>
+                        <div className="featured-card__stat-track" aria-hidden="true">
+                          <div className="featured-card__stat-fill" style={{ '--stat-width': `${ancho}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
                 <div className="featured-card__actions">
                   <button className="btn btn--primary" type="button" onClick={() => onCapturar(destacado)}>
                     Capturar
@@ -123,6 +151,12 @@ function InicioScreen({
                     Detalles
                   </button>
                 </div>
+              </div>
+
+              <div className="featured-card__stage" aria-hidden="true">
+                <span className="featured-card__watermark">{formatearNumeroPokemon(destacado.id)}</span>
+                <div className="featured-card__stage-glow" />
+                <img src={destacado.imagen} alt="" className="featured-card__image" loading="lazy" />
               </div>
             </article>
           </section>
