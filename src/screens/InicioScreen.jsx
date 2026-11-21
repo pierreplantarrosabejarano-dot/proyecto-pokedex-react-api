@@ -101,6 +101,20 @@ function InicioScreen({
                   />
                 </div>
                 <p>{destacado.tipoTexto || 'Cargando tipo...'}</p>
+                <div className="featured-card__facts" aria-label="Datos rápidos del Pokémon destacado">
+                  <div className="featured-card__fact">
+                    <span>Altura</span>
+                    <strong>{destacado.altura || '—'}</strong>
+                  </div>
+                  <div className="featured-card__fact">
+                    <span>Peso</span>
+                    <strong>{destacado.peso || '—'}</strong>
+                  </div>
+                  <div className="featured-card__fact">
+                    <span>Habilidad</span>
+                    <strong>{(destacado.habilidades || [])[0] || '—'}</strong>
+                  </div>
+                </div>
                 <div className="featured-card__actions">
                   <button className="btn btn--primary" type="button" onClick={() => onCapturar(destacado)}>
                     Capturar
